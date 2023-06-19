@@ -61,7 +61,8 @@ async fn main() -> std::io::Result<()> {
     // .bind(("192.168.50.20", 8080))?
     // .run()
     // .await;
-    let listener = TcpListener::bind("192.168.50.20:8081").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:8080").unwrap();
+    // let listener = TcpListener::bind("192.168.50.20:8081").unwrap();
 
     // accept connections and process them serially
     for stream in listener.incoming() {
