@@ -14,7 +14,9 @@ fn handle_client(mut stream: TcpStream) {
     let mut reader = BufReader::new(&stream);
     copy(&mut reader, &mut file_ref).expect("Unable to write data");
     // file_ref.write_all(line).expect("Unable to write data");
-    stream.write(b"Hello Peer!\r\n").unwrap();
+    stream
+        .write(b"Hello Peer!\r\n")
+        .expect("unable to respond to client");
 }
 // fn handle_client(mut stream: TcpStream) {
 //     println!("New client! {}", stream.peer_addr().unwrap());
@@ -61,7 +63,7 @@ async fn main() -> std::io::Result<()> {
     // .bind(("192.168.50.20", 8080))?
     // .run()
     // .await;
-    let listener = TcpListener::bind("0.0.0.0:8080").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:8080").expect("couldn't start TCP server");
     // let listener = TcpListener::bind("192.168.50.20:8081").unwrap();
 
     // accept connections and process them serially
