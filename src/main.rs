@@ -1,17 +1,38 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use std::{
-    io::{prelude::*, BufReader},
+    fs::OpenOptions,
+    io::{copy, prelude::*, BufReader, Write},
     net::{TcpListener, TcpStream},
+    str,
 };
 
 fn handle_client(mut stream: TcpStream) {
-    println!("New client! {}", stream.peer_addr().unwrap());
-    let mut result: [u8; 128] = [0; 128];
-    // result = stream.read(&mut [0; 128]).unwrap();
-    stream.read(&mut result).unwrap();
-    println!("result: {:?}", result);
+    let mut file_ref = OpenOptions::new()
+        .append(true)
+        .open("gpslog.txt")
+        .expect("Unable to open file");
+    let mut reader = BufReader::new(&stream);
+    copy(&mut reader, &mut file_ref).expect("Unable to write data");
+    // file_ref.write_all(line).expect("Unable to write data");
     stream.write(b"Hello Peer!\r\n").unwrap();
 }
+// fn handle_client(mut stream: TcpStream) {
+//     println!("New client! {}", stream.peer_addr().unwrap());
+//     let mut result: [u8; 128] = [0; 128];
+//     stream.read(&mut result).unwrap();
+//     let reader = BufReader::new(stream);
+//     let mut mystr = String::new();
+//     reader.read_line(&mut mystr).unwrap();
+//     // let mystr = str::from_utf8(&result).unwrap();
+//     // println!("result: {}", mystr);
+
+//     let mut file_ref = OpenOptions::new()
+//         .append(true)
+//         .open("gpslog.txt")
+//         .expect("Unable to open file");
+//     file_ref.write_all(line).expect("Unable to write data");
+//     stream.write(b"Hello Peer!\r\n").unwrap();
+// }
 
 #[get("/")]
 async fn hello() -> impl Responder {
