@@ -1,3 +1,4 @@
+use pardini::ThreadPool;
 use std::{
     fs::OpenOptions,
     io::{copy, BufReader, Write},
@@ -21,6 +22,7 @@ fn handle_client(mut stream: TcpStream) {
 
 fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind("0.0.0.0:8080").expect("couldn't start TCP server");
+    let pool = ThreadPool::new(4);
     // accept connections and process them serially
     for stream in listener.incoming() {
         thread::spawn(|| {
