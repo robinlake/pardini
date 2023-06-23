@@ -1,3 +1,4 @@
+use pardini::ThreadPool;
 use std::{
     fs::OpenOptions,
     io::{copy, BufReader},
@@ -23,7 +24,8 @@ fn handle_client(stream: TcpStream) {
 }
 
 fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("0.0.0.0:8084").expect("couldn't start TCP server");
+    let listener = TcpListener::bind("0.0.0.0:8080").expect("couldn't start TCP server");
+    let pool = ThreadPool::new(4);
     // accept connections and process them serially
     for stream in listener.incoming() {
         thread::spawn(|| handle_client(stream.expect("Unable to unwrap stream")));
