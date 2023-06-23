@@ -3,7 +3,6 @@ use std::{
     fs::OpenOptions,
     io::{copy, BufReader},
     net::{TcpListener, TcpStream},
-    thread,
 };
 
 fn handle_client(stream: TcpStream) {
@@ -28,7 +27,13 @@ fn main() -> std::io::Result<()> {
     let pool = ThreadPool::new(4);
     // accept connections and process them serially
     for stream in listener.incoming() {
-        thread::spawn(|| handle_client(stream.expect("Unable to unwrap stream")));
+        // thread::spawn(|| {
+        //     // connection succeeded
+        //     let stream = stream.expect("Unable to unwrap stream");
+        //     handle_client(stream);
+        // });
+        // handle_client(stream?);
+        pool.execute(|| handle_client(stream.expect("Unable to unwrap stream")));
     }
     Ok(())
 }
