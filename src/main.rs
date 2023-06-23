@@ -2,6 +2,7 @@ use std::{
     fs::OpenOptions,
     io::{copy, BufReader, Write},
     net::{TcpListener, TcpStream},
+    thread,
 };
 
 fn handle_client(mut stream: TcpStream) {
@@ -15,13 +16,19 @@ fn handle_client(mut stream: TcpStream) {
     stream
         .write(b"Hello Peer!\r\n")
         .expect("unable to respond to client");
+    stream.flush().unwrap();
 }
 
 fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind("0.0.0.0:8080").expect("couldn't start TCP server");
     // accept connections and process them serially
     for stream in listener.incoming() {
-        handle_client(stream?);
+        thread::spawn(|| {
+            // connection succeeded
+            let stream = stream.expect("Unable to unwrap stream");
+            handle_client(stream);
+        });
+        // handle_client(stream?);
     }
     Ok(())
 }
