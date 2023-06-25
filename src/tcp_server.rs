@@ -12,12 +12,6 @@ pub fn start_server(addr: String, pool_size: usize) {
     let pool = ThreadPool::new(pool_size);
     // accept connections and process them serially
     for stream in listener.incoming() {
-        // thread::spawn(|| {
-        //     // connection succeeded
-        //     let stream = stream.expect("Unable to unwrap stream");
-        //     handle_client(stream);
-        // });
-        // handle_client(stream?);
         pool.execute(|| handle_client(stream.expect("Unable to unwrap stream")));
     }
 }
