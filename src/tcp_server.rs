@@ -22,7 +22,7 @@ fn handle_client(stream: TcpStream) {
         .and_then(|ok| Ok(ok.to_string()))
         .unwrap_or("Unknown".to_string());
 
-    log::debug!("client {} connected", peer_name);
+    log::debug!("client {peer_name} connected");
 
     let mut file = OpenOptions::new()
         .append(true)
@@ -30,15 +30,16 @@ fn handle_client(stream: TcpStream) {
         .open("gpslog.txt")
         .expect("Unable to open file");
 
-    let mut reader = BufReader::new(&stream);
-    if let Err(e) = copy(&mut reader, &mut file) {
-        match e.kind() {
-            std::io::ErrorKind::ConnectionReset => {
-                log::debug!("client {} connection reset", peer_name)
+    copy(&mut BufReader::new(&stream), &mut file)
+        .and_then(|copied_bytes| {
+            log::debug!("client {peer_name} disconnected after copying {copied_bytes} bytes");
+            Ok(())
+        })
+        .unwrap_or_else(|e| {
+            if e.kind() == std::io::ErrorKind::ConnectionReset {
+                log::debug!("client {peer_name} connection reset");
+            } else {
+                panic!("couldn't copy data into file: {e}")
             }
-            _ => log::error!("Unable to copy data: {}, {}", e.kind(), e),
-        }
-    } else {
-        log::debug!("client {} disconnected", peer_name);
-    }
+        });
 }
