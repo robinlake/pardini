@@ -3,6 +3,7 @@ use std::{
     fs::OpenOptions,
     io::{copy, BufReader},
     net::{TcpListener, TcpStream},
+    sync::Arc,
 };
 
 pub struct ServerOptions {
@@ -17,13 +18,10 @@ pub fn start_server(opts: ServerOptions) {
 
     let pool = ThreadPool::new(opts.pool_size);
     // accept connections and process them serially
+    let dir = Arc::new(opts.data_dir.clone());
     for stream in listener.incoming() {
-        pool.execute(|| {
-            consume_stream(
-                stream.expect("Unable to unwrap stream"),
-                opts.data_dir.to_string().as_str(),
-            )
-        });
+        let new_dir = dir.clone();
+        pool.execute(move || consume_stream(stream.expect("Unable to unwrap stream"), &new_dir));
     }
 }
 
