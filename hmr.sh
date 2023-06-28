@@ -1,1 +1,1 @@
-cargo watch -q -c -w src/ -x 'run -q'
+cargo watch -q -c -w src/ -x 'run -q -- -vvv'
