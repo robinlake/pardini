@@ -5,18 +5,29 @@ use std::{
     net::{TcpListener, TcpStream},
 };
 
-pub fn start_server(addr: String, pool_size: usize) {
-    let listener = TcpListener::bind(&addr).expect("couldn't start TCP server");
-    log::info!("server listening on {}", &addr);
+pub struct ServerOptions {
+    pub addr: String,
+    pub pool_size: usize,
+    pub data_dir: String,
+}
 
-    let pool = ThreadPool::new(pool_size);
+pub fn start_server(opts: ServerOptions) {
+    let listener = TcpListener::bind(&opts.addr).expect("couldn't start TCP server");
+    log::info!("server listening on {}", &opts.addr);
+
+    let pool = ThreadPool::new(opts.pool_size);
     // accept connections and process them serially
     for stream in listener.incoming() {
-        pool.execute(|| handle_client(stream.expect("Unable to unwrap stream")));
+        pool.execute(|| {
+            consume_stream(
+                stream.expect("Unable to unwrap stream"),
+                opts.data_dir.to_string().as_str(),
+            )
+        });
     }
 }
 
-fn handle_client(stream: TcpStream) {
+fn consume_stream(stream: TcpStream, data_dir: &str) {
     let peer_name = stream
         .peer_addr()
         .and_then(|ok| Ok(ok.to_string()))
